@@ -1,0 +1,13 @@
+{
+  "name": "bun-chat",
+  "version": "1.0.0",
+  "private": true,
+  "module": "index.ts",
+  "type": "module",
+  "workspaces": [
+    "src/*"
+  ],
+  "scripts": {
+    "clean": "rm -rf node_modules packages/a/node_modules packages/b/node_modules bun.lockb packages/a/bun.lockb packages/b/bun.lockb"
+  },
+}
