@@ -1,6 +1,8 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
-import { User } from "./entity/User"
+import { Users } from "./entity/Users"
+import { Groups } from "./entity/Groups"
+import { Messages } from "./entity/Messages"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -11,7 +13,11 @@ export const AppDataSource = new DataSource({
     database: "chat-app-db",
     synchronize: true,
     logging: false,
-    entities: [User],
+    entities: [
+        Users,
+        Groups,
+        Messages
+     ],
     migrations: [],
     subscribers: [],
 })
