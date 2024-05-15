@@ -1,15 +1,56 @@
-version: "3"
-
 services:
 
   # Postgres database
-  postgres:
-    image: postgres
+  psqldb: # renaming this key as this will become the hostname which other services can use to refer to the database
+    image: postgres:16.3
+    restart: always
+    shm_size: 128mb
     environment:
-      POSTGRES_PASSWORD: postgres  # Replace with your password
+      POSTGRES_PASSWORD_FILE: /run/secrets/psqlpwd  # Read from text file, see "secrets" section of docker-compose.yml
       POSTGRES_USER: postgres  # Replace with your username
       POSTGRES_DB: chat-app-db  # Replace with your database name
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data  # Persist database data
-    ports:
-      - "5432:5432"  # Expose Postgres port
+      - postgres-data:/var/lib/postgresql/data  # Persist database data using a named volume
+    secrets:
+      - psqlpwd # specifies that we'll be using this secret; definition is in the "secrets" section
+
+  # PG Admin
+  pgadmin:
+    image: "dpage/pgadmin4:8.6"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@bunchat.dev" # this email address doesn't actually exist
+      PGADMIN_DEFAULT_PASSWORD_FILE: "/run/secrets/pgadminpwd"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports: ["80:80"]
+    secrets:
+      - pgadminpwd
+    depends_on:
+      - psqldb
+
+  # App dev environment
+  app:
+    image: "oven/bun:1.1.8"
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/psqlpwd  # Read from text file, see "secrets" section of docker-compose.yml
+      POSTGRES_USER: postgres  # Replace with your username
+      POSTGRES_DB: chat-app-db  # Replace with your database name
+    entrypoint: [] # necessary to override the default entrypoint from the bun image, since this is our dev app setup
+    command: "/bin/sh -c 'bun install && bun run --watch src/api/src/index.ts'"
+    ports: ["3000:3000"]
+    volumes: ["./:/home/bun/app"] # mount local source directory since this is a dev environment
+    depends_on:
+      - psqldb
+    secrets:
+      - psqlpwd
+
+secrets:
+  psqlpwd:
+    file: "psqlpwd.txt" # Generate a strong password using the terminal: openssl rand -base64 32 | tr -d '\n' > psqlpwd.txt
+  pgadminpwd:
+    file: "pgadminpwd.txt" # Create this file and set a human readable password which you will remember
+
+# Named volumes for persisting data
+volumes:
+  postgres-data:
+  pgadmin:
