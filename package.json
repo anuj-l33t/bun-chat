@@ -10,4 +10,11 @@
   "scripts": {
     "clean": "rm -rf node_modules packages/a/node_modules packages/b/node_modules bun.lockb packages/a/bun.lockb packages/b/bun.lockb"
   },
+  "dependencies": {
+    "elysia": "^1.0.20",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "bun-types": "^1.1.8"
+  }
 }
